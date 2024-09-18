@@ -3,37 +3,48 @@ package Ecommerce.project.grosa.Presentation.Components
 import Ecommerce.project.grosa.Domain.Model.Grocery
 import Ecommerce.project.grosa.Domain.Model.GroceryItem
 import Ecommerce.project.grosa.R
-import Ecommerce.project.grosa.Utils.newGroceryItemDetailTypes
+import Ecommerce.project.grosa.Utils.TextBarHolders
+import Ecommerce.project.grosa.Utils.TextbarKeyBoardTypes
 import Ecommerce.project.grosa.ui.theme.GrosaTheme
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,34 +53,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import kotlinx.coroutines.launch
 
 
 @Composable
-fun TopBar(isHome : Boolean,onBack : () -> Unit){
+fun TopBar(isHome : Boolean,onBack : () -> Unit = {}){
     when(isHome){
         true -> {
-            Row (modifier = Modifier
+            Box (modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween){
-
+                .background(MaterialTheme.colorScheme.tertiary)
+                .padding(10.dp)){
                 Image(modifier = Modifier.size(30.dp),
                     painter = painterResource(id = R.drawable.logo),
                     contentDescription = "logo")
-
-                Icon(imageVector = Icons.Default.MoreVert,
-                    tint = Color.White,
-                    contentDescription = "menu")
             }
         }
 
-        else -> {
+
+        false -> {
             Box (modifier = Modifier
                 .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.tertiary)
                 .padding(10.dp)){
                 Icon(
                     modifier = Modifier
@@ -87,16 +98,26 @@ fun TopBar(isHome : Boolean,onBack : () -> Unit){
 }
 
 @Composable
-fun SearchBar(value : String,modifier: Modifier,onvaluechange : (newvalue : String) -> Unit){
-    TextField(
+fun TextBar(value : String,
+            holder: String
+            ,modifier: Modifier,
+            keyboardtype : String,
+            onvaluechange : (newvalue : String) -> Unit){
+
+    OutlinedTextField(
         modifier = modifier
-            .clip(RoundedCornerShape(16)),
+            ,
         value = value,
+        keyboardOptions = KeyboardOptions.Default.copy(showKeyboardOnFocus = true,
+            keyboardType = if (keyboardtype.equals(TextbarKeyBoardTypes.NUMBER.name))
+                KeyboardType.Number
+            else KeyboardType.Text),
+
         singleLine = true,
         onValueChange = {newText ->
                         onvaluechange.invoke(newText)
         }, placeholder = {
-            Text(text = "Search Product",
+            Text(text = holder,
                 color = Color.LightGray,
                 style = MaterialTheme.typography.labelMedium
             )
@@ -138,7 +159,48 @@ fun CustomButton(modifier: Modifier,icon : ImageVector?,text : String?,onclick :
 
 
 @Composable
-fun Search(){
+fun groceryItemList(list: List<GroceryItem>,
+                    modifier: Modifier,
+                    isProducts : Boolean,
+                    ondeleteGroceryItem: () -> Unit = {},
+                    onsaveGroceryItem: () -> Unit = {}
+                    ){
+
+    LazyColumn(modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+
+        items(list){groceryItem ->
+            groceryItem (
+                modifier = Modifier,
+                isProducts = isProducts,
+                item = groceryItem,
+                ondeleteGroceryItem = ondeleteGroceryItem
+            ){
+                onsaveGroceryItem.invoke()
+            }
+        }
+
+    }
+}
+
+@Composable
+fun groceriesList(list: List<Grocery>,modifier: Modifier,onItemClick: (grocery: Grocery) -> Unit){
+    LazyColumn(modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+
+        items(list){grocery ->
+            grocery(grocery = grocery, modifier = Modifier.fillMaxWidth()){
+                onItemClick.invoke(grocery)
+            }
+        }
+
+    }
+}
+
+@Composable
+fun Search(value: String,onChangeValue : (newValue : String) -> Unit){
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -147,8 +209,11 @@ fun Search(){
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
 
-        SearchBar(value = "", modifier = Modifier.weight(0.8f)) {
-
+        TextBar(value = value,
+            holder = TextBarHolders.SEARCHPRODUCT.value,
+            keyboardtype = TextbarKeyBoardTypes.TEXT.name,
+            modifier = Modifier.weight(0.8f)) {newValue ->
+            onChangeValue.invoke(newValue)
         }
 
 
@@ -163,156 +228,276 @@ fun Search(){
 }
 
 @Composable
-fun GroceryItem(modifier: Modifier,item: GroceryItem){
-    Column(modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+fun groceryItem(modifier: Modifier,
+                item: GroceryItem,
+                isProducts: Boolean,
+                ondeleteGroceryItem : () -> Unit,
+                onsaveGroceryItem : () -> Unit){
+
+    Column(modifier = modifier
+        .fillMaxWidth()
+        .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
 
         Image(modifier = Modifier
             .fillMaxWidth()
-            .size(100.dp),
+            .border(
+                width = 2.dp,
+                color = Color.Black
+            )
+            .size(200.dp),
             contentScale = ContentScale.Fit,
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "item image")
 
-        Column(modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondary)
+            .padding(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically){
 
-            Text(modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSecondary,
-                text = item.itemName)
-            Text(modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSecondary,
-                text = "Price - ${item.itemPrice}")
-            Text(modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSecondary,
-                text = "Shop - ${item.itemShop}")
+            Column(modifier = Modifier
+                .background(MaterialTheme.colorScheme.secondary)
+                .padding(10.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(10.dp)) {
+
+                Text(
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    text = item.itemName)
+                Text(
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    text = "Price - ${item.itemPrice}")
+                Text(
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    text = "Shop - ${item.itemShop}")
+
+            }
+
+            Column (modifier = Modifier
+                .background(MaterialTheme.colorScheme.secondary)
+                .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally){
+                if (!isProducts) {
+                    Icon(
+                        modifier = Modifier.size(30.dp)
+                            .clickable {
+                                ondeleteGroceryItem.invoke()
+                            },
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "delete"
+                    )
+                }
+
+                Icon(
+                    modifier = Modifier.size(30.dp)
+                        .clickable {
+                            onsaveGroceryItem.invoke()
+                        },
+                    tint = MaterialTheme.colorScheme.onSecondary,
+                    imageVector = Icons.Default.Save,
+                    contentDescription = "save")
+            }
+
 
         }
+
     }
 }
 
 @Composable
-fun FloatingActionButton(onclick: () -> Unit){
-    Box (modifier = Modifier
-        .clip(shape = CircleShape)
-        .background(MaterialTheme.colorScheme.tertiary)
-        .size(30.dp)){
-        Icon(
-            modifier = Modifier.align(Alignment.Center),
-            tint = Color.White,
-            imageVector = Icons.Default.Add,
-            contentDescription = "add")
-    }
+fun floatingActionButton(){
+    Icon(
+        tint = Color.White,
+        imageVector = Icons.Default.Add,
+        contentDescription = "add")
 }
 
-@Composable
-fun PopUp(names : List<String>,
-          modifier: Modifier,
-          onclick: (name : String) -> Unit){
 
-    LazyColumn(modifier = modifier
-        .background(MaterialTheme.colorScheme.secondary)
-        .padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally) {
-
-        items(names, key = {
-            it
-        }){grocerylistname ->
-            Text(text = grocerylistname,
-                color = MaterialTheme.colorScheme.onSecondary,
-                style = MaterialTheme.typography.titleMedium)
-        }
-
-    }
-
-}
 
 @Composable
-fun Grocery(grocery: Grocery,modifier: Modifier){
+fun grocery(grocery: Grocery,modifier: Modifier,onItemClick: () -> Unit){
     Column(modifier = modifier
         .clip(RoundedCornerShape(10.dp))
         .background(MaterialTheme.colorScheme.secondary)
-        .fillMaxWidth(),
+        .fillMaxWidth()
+        .padding(10.dp)
+        .clickable {
+            onItemClick.invoke()
+        },
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = grocery.name,
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = grocery.name,
             color = MaterialTheme.colorScheme.onSecondary,
             style = MaterialTheme.typography.titleMedium)
 
-        Text(text = "R${grocery.totalPrice}",
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "R${grocery.totalPrice}",
             color = MaterialTheme.colorScheme.onSecondary,
             style = MaterialTheme.typography.labelMedium)
     }
 }
 
-@Composable
-fun PopUpGroceries(modifier: Modifier,onsave : (newGrocery : Grocery) -> Unit){
-    val newgrocery = rememberSaveable {
-        mutableStateOf(Grocery())
-    }
-    Column(modifier = modifier
-        .clip(RoundedCornerShape(10.dp))
-        .background(MaterialTheme.colorScheme.primary)
-        .fillMaxWidth()
-        .padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally) {
 
-        SearchBar(value = "", modifier = Modifier) {newGrocery ->
-            newgrocery.value = Grocery(newGrocery)
-        }
-
-        CustomButton(modifier = Modifier, icon = null, text = "Save") {
-            onsave.invoke(newgrocery.value)
-        }
-    }
-}
 
 @Composable
 fun newGroceryItemDetail(text: String,
+                         textbarvalue : String,
+                         keyboardtype: String,
                          modifier: Modifier,
-                         type : String,
-                         onOpenImages : () -> Unit,
-                         onchangeText : (newText : String) -> Unit){
+                         holder : String,
+                         onchangeText : (newText : String) -> Unit = {}){
 
-    if (type.equals(newGroceryItemDetailTypes.Normal.name)){
-        Column(modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .fillMaxWidth()
-            .border(width = 2.dp,
-                color = MaterialTheme.colorScheme.tertiary)
-            .padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            horizontalAlignment = Alignment.Start) {
-            Text(text = "text",
-                color = MaterialTheme.colorScheme.onSecondary,
-                style = MaterialTheme.typography.titleMedium)
+    Column(modifier = modifier
+        .clip(RoundedCornerShape(10.dp))
+        .fillMaxWidth()
+        .padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalAlignment = Alignment.Start) {
 
-            SearchBar(value = "", modifier = Modifier) {newvalue ->
-                onchangeText.invoke(newvalue)
-            }
+        Text(text = text,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.titleMedium)
+
+        TextBar(value = textbarvalue,
+            keyboardtype = if (keyboardtype.equals(TextbarKeyBoardTypes.NUMBER)) TextbarKeyBoardTypes.NUMBER.name
+            else TextbarKeyBoardTypes.TEXT.name,
+            holder = holder,
+            modifier = Modifier) {newvalue ->
+            onchangeText.invoke(newvalue)
         }
-    }else{
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .border(width = 2.dp,
-                color = MaterialTheme.colorScheme.tertiary)
-            .padding(10.dp)){
+    }
 
-            CustomButton(modifier = Modifier,
-                icon = null,
-                text = "Choose Image") {
-                onOpenImages.invoke()
+}
+
+@Composable
+fun CustomTab(tabno : Int =0,currentPage : Int = 0,text: String,onScroll : () -> Unit){
+    val pageNo = rememberSaveable {
+        mutableStateOf(tabno)
+    }
+
+    Tab(
+        selected = currentPage == pageNo.value,
+        modifier = Modifier.padding(5.dp),
+        onClick = {
+            onScroll.invoke()
+        },
+    ) {
+        val bgcolor : Color
+        if (currentPage == pageNo.value){
+            bgcolor = MaterialTheme.colorScheme.tertiary
+        }else{
+            bgcolor = Color.DarkGray
+        }
+
+        Text(text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSecondary,
+            modifier = Modifier
+                .background(
+                    bgcolor,
+                    RoundedCornerShape(16.dp)
+                )
+                .padding(10.dp))
+    }
+}
+
+
+@Composable
+fun newGroceryDialogue(modifier: Modifier,
+                       onsave : (newGrocery : Grocery) -> Unit,
+                       onDismiss: () -> Unit){
+    val newgrocery = remember {
+        mutableStateOf(Grocery())
+    }
+
+
+    Box(modifier = modifier) {
+        Popup(
+            alignment = Alignment.Center,
+            properties = PopupProperties(
+                focusable = true
+            ),
+            onDismissRequest = {
+                onDismiss.invoke()
+            }) {
+
+            Column(modifier = modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.Yellow)
+                .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+
+                TextBar(value = newgrocery.value.name,
+                    holder = TextBarHolders.NEWGROCERY.value,
+                    keyboardtype = TextbarKeyBoardTypes.TEXT.name,
+                    modifier = Modifier) {newGrocery ->
+                    newgrocery.value = Grocery(newGrocery)
+                }
+
+                CustomButton(modifier = Modifier, icon = null, text = "Save") {
+                    onsave.invoke(newgrocery.value)
+                    onDismiss.invoke()
+                }
             }
 
         }
     }
+
+
+}
+@Composable
+fun GroceryOptions(names : List<String>,
+                   modifier: Modifier,
+                   color : Color,
+                   onclick: (grocery : String) -> Unit,
+                   onDismiss : () -> Unit){
+
+    Box(modifier = modifier) {
+        Popup(
+            alignment = Alignment.Center,
+            properties = PopupProperties(
+                focusable = true
+            ),
+            onDismissRequest = {
+                onDismiss.invoke()
+            }) {
+
+            LazyColumn(modifier = modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(color)
+                .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,) {
+
+                items(names, key = {
+                    it
+                }){grocerylistname ->
+                    Text(
+                        modifier = Modifier.clickable {
+                            onclick.invoke(grocerylistname)
+                            onDismiss.invoke()
+                        },
+                        text = grocerylistname,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.titleMedium)
+                }
+
+            }
+
+        }
+    }
+
 
 }
 
