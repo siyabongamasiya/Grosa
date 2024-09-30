@@ -1,7 +1,7 @@
 package Ecommerce.project.grosa.Presentation.Products
 
-import Ecommerce.project.grosa.Domain.Model.Grocery
-import Ecommerce.project.grosa.Domain.Model.GroceryItem
+import Ecommerce.project.grosa.Domain.Model.Room.GroceryRoom
+import Ecommerce.project.grosa.Domain.Model.Room.GroceryItemRoom
 import Ecommerce.project.grosa.Presentation.Components.GroceryOptions
 import Ecommerce.project.grosa.Presentation.Components.Search
 import Ecommerce.project.grosa.Presentation.Components.groceryItemList
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -24,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 
 
 @Composable
@@ -46,7 +44,6 @@ fun DrawProducts(navigationController: NavController) {
                 isVisibleOptions.value = !isVisibleOptions.value
 
             }
-
         }
     }
 }
@@ -63,14 +60,16 @@ fun MidSection(paddingValues: PaddingValues,
 
     val groceries = rememberSaveable {
         mutableStateOf(listOf(
-            Grocery("Ekhaya").name,
-            Grocery("Next month").name,
-            Grocery("next week").name))
+            GroceryRoom("Ekhaya").name,
+            GroceryRoom("Next month").name,
+            GroceryRoom("next week").name))
     }
 
-    val groceryItems = listOf(GroceryItem("ginger", itemPrice = "R20", itemShop = "shoprite"),
-        GroceryItem("maas", itemPrice = "R76", itemShop = "checkers"),
-        GroceryItem("mpuphu", itemPrice = "R180", itemShop = "pick n pay"))
+    val groceryItemRooms = listOf(
+        GroceryItemRoom("","ginger", itemPrice = "R20", itemShop = "shoprite"),
+        GroceryItemRoom("","maas", itemPrice = "R76", itemShop = "checkers"),
+        GroceryItemRoom("","mpuphu", itemPrice = "R180", itemShop = "pick n pay")
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier
@@ -83,7 +82,7 @@ fun MidSection(paddingValues: PaddingValues,
             Search(search.value){newvalue ->
                 search.value = newvalue
             }
-            groceryItemList(list = groceryItems,
+            groceryItemList(list = groceryItemRooms,
                 isProducts = true,
                 modifier = Modifier){
 

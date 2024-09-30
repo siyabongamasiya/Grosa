@@ -1,5 +1,6 @@
 package Ecommerce.project.grosa.Presentation.NewGroceryItem
 
+import Ecommerce.project.grosa.Domain.Model.Room.GroceryItemRoom
 import Ecommerce.project.grosa.Presentation.Components.CustomButton
 import Ecommerce.project.grosa.Presentation.Components.TopBar
 import Ecommerce.project.grosa.Presentation.Components.newGroceryItemDetail
@@ -22,13 +23,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 
 @Composable
-fun DrawNewGroceryItemScreen(navigationController: NavHostController) {
+fun DrawNewGroceryItemScreen(
+    navigationController: NavHostController,
+    newGroceryItemViewModel: NewGroceryItemViewModel,
+    grocery: String
+) {
     GrosaTheme {
         Scaffold(modifier = Modifier.fillMaxSize(),
             topBar = {
@@ -36,13 +40,19 @@ fun DrawNewGroceryItemScreen(navigationController: NavHostController) {
                     navigationController.navigateUp()
                 }
             }) {paddingValues ->
-            Midsection(paddingValues = paddingValues)
+            Midsection(paddingValues = paddingValues,
+                newGroceryItemViewModel = newGroceryItemViewModel,
+                navigationController = navigationController,
+                grocery = grocery)
         }
     }
 }
 
 @Composable
-fun Midsection(paddingValues: PaddingValues){
+fun Midsection(paddingValues: PaddingValues,
+               newGroceryItemViewModel: NewGroceryItemViewModel,
+               navigationController: NavHostController,
+               grocery: String){
     val newitemname = rememberSaveable {
         mutableStateOf("")
     }
@@ -98,6 +108,13 @@ fun Midsection(paddingValues: PaddingValues){
             }
 
             CustomButton(modifier = Modifier.fillMaxWidth(), icon = null, text = "Save") {
+                val newGrorceryItem = GroceryItemRoom(itemName = newitemname.value,
+                    itemPrice = newitemprice.value,
+                    itemShop = newitemshop.value)
+
+                newGrorceryItem.id = "$grocery ${newitemname.value} ${newitemprice.value} ${newitemshop.value}"
+                newGroceryItemViewModel.SaveGroceryItem(newGrorceryItem,grocery)
+                navigationController.navigateUp()
 
             }
 

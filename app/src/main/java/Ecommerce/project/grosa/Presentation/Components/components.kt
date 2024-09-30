@@ -1,35 +1,32 @@
 package Ecommerce.project.grosa.Presentation.Components
 
-import Ecommerce.project.grosa.Domain.Model.Grocery
-import Ecommerce.project.grosa.Domain.Model.GroceryItem
+import Ecommerce.project.grosa.Domain.Model.Room.GroceryRoom
+import Ecommerce.project.grosa.Domain.Model.Room.GroceryItemRoom
+import Ecommerce.project.grosa.Domain.Model.Room.GroceryWithItems
 import Ecommerce.project.grosa.R
 import Ecommerce.project.grosa.Utils.TextBarHolders
 import Ecommerce.project.grosa.Utils.TextbarKeyBoardTypes
-import Ecommerce.project.grosa.ui.theme.GrosaTheme
+import Ecommerce.project.grosa.Utils.calculateTotalPrice
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
@@ -39,12 +36,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,12 +49,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -159,11 +151,11 @@ fun CustomButton(modifier: Modifier,icon : ImageVector?,text : String?,onclick :
 
 
 @Composable
-fun groceryItemList(list: List<GroceryItem>,
+fun groceryItemList(list: List<GroceryItemRoom>,
                     modifier: Modifier,
                     isProducts : Boolean,
-                    ondeleteGroceryItem: () -> Unit = {},
-                    onsaveGroceryItem: () -> Unit = {}
+                    ondeleteGroceryItem: (groceryItem : GroceryItemRoom) -> Unit = {},
+                    onsaveGroceryItem: (groceryItem : GroceryItemRoom) -> Unit = {}
                     ){
 
     LazyColumn(modifier = modifier.fillMaxSize(),
@@ -175,9 +167,11 @@ fun groceryItemList(list: List<GroceryItem>,
                 modifier = Modifier,
                 isProducts = isProducts,
                 item = groceryItem,
-                ondeleteGroceryItem = ondeleteGroceryItem
+                ondeleteGroceryItem = {
+                    ondeleteGroceryItem.invoke(groceryItem)
+                }
             ){
-                onsaveGroceryItem.invoke()
+                onsaveGroceryItem.invoke(groceryItem)
             }
         }
 
@@ -185,14 +179,25 @@ fun groceryItemList(list: List<GroceryItem>,
 }
 
 @Composable
-fun groceriesList(list: List<Grocery>,modifier: Modifier,onItemClick: (grocery: Grocery) -> Unit){
-    LazyColumn(modifier = modifier.fillMaxSize(),
+fun groceriesList(list: List<GroceryWithItems>,
+                  modifier: Modifier,
+                  ondeleteGroceryItem: (grocery : GroceryRoom) -> Unit,
+                  onItemClick: (groceryRoom: GroceryRoom) -> Unit){
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
 
-        items(list){grocery ->
-            grocery(grocery = grocery, modifier = Modifier.fillMaxWidth()){
-                onItemClick.invoke(grocery)
+        items(list){grocerywithitems ->
+            val totalprice = calculateTotalPrice(grocerywithitems.groceryitems)
+            grocerywithitems.grocery.totalPrice = totalprice
+
+            grocery(groceryRoom = grocerywithitems.grocery,
+                modifier = Modifier.fillMaxWidth(),
+                ondeleteGroceryItem = {
+                    ondeleteGroceryItem.invoke(grocerywithitems.grocery)
+                }){
+                onItemClick.invoke(grocerywithitems.grocery)
             }
         }
 
@@ -229,7 +234,7 @@ fun Search(value: String,onChangeValue : (newValue : String) -> Unit){
 
 @Composable
 fun groceryItem(modifier: Modifier,
-                item: GroceryItem,
+                item: GroceryItemRoom,
                 isProducts: Boolean,
                 ondeleteGroceryItem : () -> Unit,
                 onsaveGroceryItem : () -> Unit){
@@ -285,7 +290,8 @@ fun groceryItem(modifier: Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally){
                 if (!isProducts) {
                     Icon(
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier
+                            .size(30.dp)
                             .clickable {
                                 ondeleteGroceryItem.invoke()
                             },
@@ -296,7 +302,8 @@ fun groceryItem(modifier: Modifier,
                 }
 
                 Icon(
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier
+                        .size(30.dp)
                         .clickable {
                             onsaveGroceryItem.invoke()
                         },
@@ -322,29 +329,48 @@ fun floatingActionButton(){
 
 
 @Composable
-fun grocery(grocery: Grocery,modifier: Modifier,onItemClick: () -> Unit){
-    Column(modifier = modifier
+fun grocery(groceryRoom: GroceryRoom,
+            modifier: Modifier,
+            ondeleteGroceryItem: () -> Unit,
+            onItemClick: () -> Unit){
+    Row (
+        modifier = modifier
         .clip(RoundedCornerShape(10.dp))
         .background(MaterialTheme.colorScheme.secondary)
         .fillMaxWidth()
         .padding(10.dp)
         .clickable {
             onItemClick.invoke()
-        },
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = grocery.name,
-            color = MaterialTheme.colorScheme.onSecondary,
-            style = MaterialTheme.typography.titleMedium)
+        }, horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically){
 
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = "R${grocery.totalPrice}",
-            color = MaterialTheme.colorScheme.onSecondary,
-            style = MaterialTheme.typography.labelMedium)
+        Column(
+            modifier = Modifier,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalAlignment = Alignment.Start) {
+            Text(
+                modifier = Modifier,
+                text = groceryRoom.name,
+                color = MaterialTheme.colorScheme.onSecondary,
+                style = MaterialTheme.typography.titleMedium)
+
+            Text(
+                modifier = Modifier,
+                text = "R${groceryRoom.totalPrice}",
+                color = MaterialTheme.colorScheme.onSecondary,
+                style = MaterialTheme.typography.labelMedium)
+        }
+
+        Icon(
+            modifier = Modifier.clickable {
+                ondeleteGroceryItem.invoke()
+            },
+            imageVector = Icons.Default.Delete,
+            tint = Color.White,
+            contentDescription = "delete grocery")
+
     }
+
 }
 
 
@@ -369,7 +395,7 @@ fun newGroceryItemDetail(text: String,
             style = MaterialTheme.typography.titleMedium)
 
         TextBar(value = textbarvalue,
-            keyboardtype = if (keyboardtype.equals(TextbarKeyBoardTypes.NUMBER)) TextbarKeyBoardTypes.NUMBER.name
+            keyboardtype = if (keyboardtype == TextbarKeyBoardTypes.NUMBER.name) TextbarKeyBoardTypes.NUMBER.name
             else TextbarKeyBoardTypes.TEXT.name,
             holder = holder,
             modifier = Modifier) {newvalue ->
@@ -414,10 +440,10 @@ fun CustomTab(tabno : Int =0,currentPage : Int = 0,text: String,onScroll : () ->
 
 @Composable
 fun newGroceryDialogue(modifier: Modifier,
-                       onsave : (newGrocery : Grocery) -> Unit,
+                       onsave : (newGroceryRoom : GroceryRoom) -> Unit,
                        onDismiss: () -> Unit){
     val newgrocery = remember {
-        mutableStateOf(Grocery())
+        mutableStateOf(GroceryRoom())
     }
 
 
@@ -442,7 +468,7 @@ fun newGroceryDialogue(modifier: Modifier,
                     holder = TextBarHolders.NEWGROCERY.value,
                     keyboardtype = TextbarKeyBoardTypes.TEXT.name,
                     modifier = Modifier) {newGrocery ->
-                    newgrocery.value = Grocery(newGrocery)
+                    newgrocery.value = GroceryRoom(newGrocery)
                 }
 
                 CustomButton(modifier = Modifier, icon = null, text = "Save") {
