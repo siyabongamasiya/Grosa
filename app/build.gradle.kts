@@ -25,7 +25,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -95,6 +95,7 @@ dependencies {
     //tests
     testImplementation(libs.junit)
     testImplementation(libs.truth)
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.0")
     androidTestImplementation(libs.hilt.android.testing)
     androidTestImplementation(libs.truth)
     androidTestImplementation(libs.androidx.junit)
@@ -104,6 +105,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
+
 
 // Allow references to generated code
 kapt {

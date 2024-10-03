@@ -275,7 +275,7 @@ fun groceryItem(modifier: Modifier,
                 Text(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSecondary,
-                    text = "Price - ${item.itemPrice}")
+                    text = "Price - R${item.itemPrice}")
                 Text(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSecondary,
