@@ -35,7 +35,7 @@ Grosa is a simple and intuitive Android application that helps users create groc
 ---
 
 ## 📂 Project Structure
-
+```bash
 app/
 ├── java/com/example/grosa/
 │ ├── App/Grosa.kt # Application class
@@ -48,6 +48,7 @@ app/
 │ ├── values/ # Strings, themes, and styles
 │ └── mipmap/ # App icons
 └── AndroidManifest.xml
+```
 
 ## 🚀 Getting Started
 
