@@ -28,7 +28,7 @@ Grosa is a simple and intuitive Android application that helps users create groc
 - **Language:** Kotlin  
 - **Framework:** Jetpack Compose  
 - **Architecture:** MVVM (Model-View-ViewModel)  
-- **Storage:** Room Database / SharedPreferences (depending on implementation)  
+- **Storage:** Room Database
 - **Build Tool:** Gradle  
 - **IDE:** Android Studio  
 
