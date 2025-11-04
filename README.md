@@ -1,21 +1,82 @@
-About
+# 🛒 Grosa – Grocery List App
 
-This App was Created to allow Users to make grocery lists and see how much they will spend on their next grocery list.
+Grosa is a simple and intuitive Android application that helps users create grocery lists and estimate how much they’ll spend on their next shopping trip. It’s designed to make budgeting and shopping more organized and stress-free.
 
-Skills Demonstrated
+---
 
-1.JetPack Compose
+## 📱 Features
 
-2.Kotlin-Serializtion (Type Safe Navigation)
+- 🧾 **Create and manage grocery lists**  
+  Add, edit, or remove items from your grocery list easily.
 
-3.Dagger hilt
+- 💰 **Automatic total cost calculation**  
+  The app calculates the total price of all items in your list.
 
-4.Room(Many-to-Many Relationship)
+- 🧮 **Quantity and price input**  
+  Specify the price and quantity for each item to get accurate totals.
 
-5.Turbine for testing flows
+- 🎨 **Modern UI built with Jetpack Compose**  
+  Enjoy a clean, responsive, and user-friendly design.
 
-6.Intergrating Ads with Admob
+- 💾 **Local data storage**  
+  Your grocery lists are stored locally for offline access.
 
-7.Truth for Making Assertions in Testing
+---
 
-8.App Store Publication
+## ⚙️ Tech Stack
+
+- **Language:** Kotlin  
+- **Framework:** Jetpack Compose  
+- **Architecture:** MVVM (Model-View-ViewModel)  
+- **Storage:** Room Database / SharedPreferences (depending on implementation)  
+- **Build Tool:** Gradle  
+- **IDE:** Android Studio  
+
+---
+
+## 📂 Project Structure
+
+app/
+├── java/com/example/grosa/
+│ ├── App/Grosa.kt # Application class
+│ ├── MainActivity.kt # Main activity
+│ ├── ui/ # Jetpack Compose UI components
+│ ├── data/ # Data models and database
+│ └── viewmodel/ # ViewModels and logic
+├── res/
+│ ├── layout/ # Layouts and UI resources
+│ ├── values/ # Strings, themes, and styles
+│ └── mipmap/ # App icons
+└── AndroidManifest.xml
+
+## 🚀 Getting Started
+
+### 1️ Clone the Repository
+```bash
+git clone https://github.com/siyabongamasiya/grosa.git
+cd grosa
+```
+
+### 2 Open in Android Studio
+
+Launch Android Studio
+
+Select File → Open
+
+Choose the cloned grosa folder
+
+### 3 Run the App
+
+Connect an Android device or start an emulator
+
+Click Run ▶️ to build and launch the app
+
+### How It Works
+
+Open the app and create a new grocery list.
+
+Add items with their quantities and prices.
+
+The total amount updates automatically.
+
+Save your list and reuse it for your next shopping trip.
